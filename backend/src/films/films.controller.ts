@@ -7,12 +7,12 @@ export class FilmsController {
   constructor(private readonly filmsService: FilmsService) {}
 
   @Get()
-  getFilms(): ListDto<FilmDto> {
+  getFilms(): Promise<ListDto<FilmDto>> {
     return this.filmsService.getFilms();
   }
 
   @Get(':id/schedule')
-  getSchedule(@Param('id') id: string): ListDto<SessionDto> {
+  getSchedule(@Param('id') id: string): Promise<ListDto<SessionDto>> {
     return this.filmsService.getSchedule(id);
   }
 }

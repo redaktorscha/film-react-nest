@@ -8,7 +8,7 @@ import { FilmsController } from './films/films.controller';
 import { FilmsService } from './films/films.service';
 import { OrderController } from './order/order.controller';
 import { OrderService } from './order/order.service';
-import { FilmsRepository } from './repository/films.repository';
+import { RepositoryModule } from './repository/repository.module';
 
 @Module({
   imports: [
@@ -16,12 +16,13 @@ import { FilmsRepository } from './repository/films.repository';
       isGlobal: true,
       cache: true,
     }),
+    RepositoryModule,
     ServeStaticModule.forRoot({
       rootPath: path.join(__dirname, '..', 'public', 'content', 'afisha'),
       serveRoot: '/content/afisha',
     }),
   ],
   controllers: [FilmsController, OrderController],
-  providers: [configProvider, FilmsRepository, FilmsService, OrderService],
+  providers: [configProvider, FilmsService, OrderService],
 })
 export class AppModule {}

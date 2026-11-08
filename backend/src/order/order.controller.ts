@@ -9,7 +9,7 @@ export class OrderController {
 
   @Post()
   @HttpCode(200)
-  createOrder(@Body() order: OrderDto): ListDto<OrderedTicketDto> {
+  createOrder(@Body() order: OrderDto): Promise<ListDto<OrderedTicketDto>> {
     return this.orderService.createOrder(order);
   }
 }

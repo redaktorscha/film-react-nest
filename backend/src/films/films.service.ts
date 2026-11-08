@@ -6,18 +6,13 @@ import { FilmsRepository } from '../repository/films.repository';
 export class FilmsService {
   constructor(private readonly filmsRepository: FilmsRepository) {}
 
-  getFilms(): ListDto<FilmDto> {
-    const items = this.filmsRepository
-      .findAll()
-      .map(({ schedule, ...film }) => {
-        void schedule;
-        return film;
-      });
+  async getFilms(): Promise<ListDto<FilmDto>> {
+    const items = await this.filmsRepository.findAll();
     return new ListDto(items.length, items);
   }
 
-  getSchedule(id: string): ListDto<SessionDto> {
-    const film = this.filmsRepository.findById(id);
+  async getSchedule(id: string): Promise<ListDto<SessionDto>> {
+    const film = await this.filmsRepository.findById(id);
     if (!film) {
       throw new NotFoundException({ error: 'Фильм не найден' });
     }

@@ -1,14 +1,18 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { FilmsRepository } from '../repository/films.repository';
-import { ListDto, SessionDto } from '../films/dto/films.dto';
+import { OrdersRepository } from '../repository/orders.repository';
+import { ListDto } from '../films/dto/films.dto';
 import { OrderDto, OrderedTicketDto } from './dto/order.dto';
 
 @Injectable()
 export class OrderService {
-  constructor(private readonly filmsRepository: FilmsRepository) {}
+  constructor(
+    private readonly filmsRepository: FilmsRepository,
+    private readonly ordersRepository: OrdersRepository,
+  ) {}
 
-  createOrder(order: OrderDto): ListDto<OrderedTicketDto> {
+  async createOrder(order: OrderDto): Promise<ListDto<OrderedTicketDto>> {
     if (
       !order ||
       typeof order.email !== 'string' ||
@@ -19,10 +23,12 @@ export class OrderService {
       throw new BadRequestException({ error: 'Некорректные данные заказа' });
     }
 
-    const reservations: { session: SessionDto; key: string }[] = [];
+    const reservations: { filmId: string; sessionId: string; key: string }[] =
+      [];
     const pending = new Set<string>();
-    const items = order.tickets.map((ticket) => {
-      const film = this.filmsRepository.findById(ticket?.film);
+    const items: OrderedTicketDto[] = [];
+    for (const ticket of order.tickets) {
+      const film = await this.filmsRepository.findById(ticket?.film);
       const session = film?.schedule.find(
         (item) => item.id === ticket?.session,
       );
@@ -43,8 +49,8 @@ export class OrderService {
         throw new BadRequestException({ error: 'Место уже занято' });
       }
       pending.add(reservationKey);
-      reservations.push({ session, key });
-      return {
+      reservations.push({ filmId: film.id, sessionId: session.id, key });
+      items.push({
         id: randomUUID(),
         film: film.id,
         session: session.id,
@@ -52,12 +58,20 @@ export class OrderService {
         row: ticket.row,
         seat: ticket.seat,
         price: session.price,
-      };
-    });
-
-    for (const { session, key } of reservations) {
-      session.taken.push(key);
+      });
     }
+
+    for (const { filmId, sessionId, key } of reservations) {
+      const reserved = await this.filmsRepository.reserveSeat(
+        filmId,
+        sessionId,
+        key,
+      );
+      if (!reserved) {
+        throw new BadRequestException({ error: 'Место уже занято' });
+      }
+    }
+    await this.ordersRepository.create(order, items);
     return new ListDto(items.length, items);
   }
 }

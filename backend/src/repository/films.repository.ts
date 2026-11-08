@@ -1,16 +1,38 @@
-import { Injectable } from '@nestjs/common';
-import { FilmWithScheduleDto } from '../films/dto/films.dto';
-import initialFilms from '../../test/mongodb_initial_stub.json';
+import { Inject, Injectable } from '@nestjs/common';
+import { Model } from 'mongoose';
+import { FilmDto, FilmWithScheduleDto } from '../films/dto/films.dto';
+import { filmToDto, filmWithScheduleToDto } from './converters';
+import { FILM_MODEL } from './tokens';
+import { FilmEntity } from './schemas/film.schema';
 
 @Injectable()
 export class FilmsRepository {
-  private readonly films: FilmWithScheduleDto[] = structuredClone(initialFilms);
+  constructor(@Inject(FILM_MODEL) private readonly films: Model<FilmEntity>) {}
 
-  findAll(): FilmWithScheduleDto[] {
-    return this.films;
+  async findAll(): Promise<FilmDto[]> {
+    const films = await this.films.find().lean().exec();
+    return films.map((film) => filmToDto(film));
   }
 
-  findById(id: string): FilmWithScheduleDto | undefined {
-    return this.films.find((film) => film.id === id);
+  async findById(id: string): Promise<FilmWithScheduleDto | null> {
+    const film = await this.films.findOne({ id }).lean().exec();
+    return film ? filmWithScheduleToDto(film) : null;
+  }
+
+  async reserveSeat(
+    filmId: string,
+    sessionId: string,
+    key: string,
+  ): Promise<boolean> {
+    const result = await this.films
+      .updateOne(
+        {
+          id: filmId,
+          schedule: { $elemMatch: { id: sessionId, taken: { $ne: key } } },
+        },
+        { $addToSet: { 'schedule.$.taken': key } },
+      )
+      .exec();
+    return result.modifiedCount === 1;
   }
 }
