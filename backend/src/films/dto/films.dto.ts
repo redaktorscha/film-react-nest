@@ -25,5 +25,8 @@ export class FilmWithScheduleDto extends FilmDto {
 }
 
 export class ListDto<T> {
-  constructor(public total: number, public items: T[]) {}
+  constructor(
+    public total: number,
+    public items: T[],
+  ) {}
 }
