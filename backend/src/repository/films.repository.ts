@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { FilmDto, FilmWithScheduleDto } from '../films/dto/films.dto';
 import { filmToDto, filmWithScheduleToDto } from './converters';
-import { FILM_MODEL } from './tokens';
+import { FILM_MODEL } from './constants';
 import { FilmEntity } from './schemas/film.schema';
 
 @Injectable()
@@ -31,6 +31,20 @@ export class FilmsRepository {
           schedule: { $elemMatch: { id: sessionId, taken: { $ne: key } } },
         },
         { $addToSet: { 'schedule.$.taken': key } },
+      )
+      .exec();
+    return result.modifiedCount === 1;
+  }
+
+  async releaseSeat(
+    filmId: string,
+    sessionId: string,
+    key: string,
+  ): Promise<boolean> {
+    const result = await this.films
+      .updateOne(
+        { id: filmId, schedule: { $elemMatch: { id: sessionId, taken: key } } },
+        { $pull: { 'schedule.$.taken': key } },
       )
       .exec();
     return result.modifiedCount === 1;

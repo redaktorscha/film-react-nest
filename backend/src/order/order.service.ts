@@ -16,7 +16,9 @@ export class OrderService {
     if (
       !order ||
       typeof order.email !== 'string' ||
+      order.email.trim() === '' ||
       typeof order.phone !== 'string' ||
+      order.phone.trim() === '' ||
       !Array.isArray(order.tickets) ||
       order.tickets.length === 0
     ) {
@@ -61,17 +63,33 @@ export class OrderService {
       });
     }
 
-    for (const { filmId, sessionId, key } of reservations) {
-      const reserved = await this.filmsRepository.reserveSeat(
-        filmId,
-        sessionId,
-        key,
-      );
-      if (!reserved) {
-        throw new BadRequestException({ error: 'Место уже занято' });
+    const completed: typeof reservations = [];
+    try {
+      for (const reservation of reservations) {
+        const reserved = await this.filmsRepository.reserveSeat(
+          reservation.filmId,
+          reservation.sessionId,
+          reservation.key,
+        );
+        if (!reserved) {
+          throw new BadRequestException({ error: 'Место уже занято' });
+        }
+        completed.push(reservation);
       }
+      await this.ordersRepository.create(order, items);
+    } catch (error) {
+      for (const reservation of completed.reverse()) {
+        const released = await this.filmsRepository.releaseSeat(
+          reservation.filmId,
+          reservation.sessionId,
+          reservation.key,
+        );
+        if (!released) {
+          throw new Error('Не удалось отменить бронирование места');
+        }
+      }
+      throw error;
     }
-    await this.ordersRepository.create(order, items);
     return new ListDto(items.length, items);
   }
 }
