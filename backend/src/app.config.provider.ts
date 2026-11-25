@@ -6,7 +6,7 @@ export const configProvider = {
   useFactory: (config: ConfigService): AppConfig => ({
     port: Number(config.get<string>('PORT', '3000')),
     database: {
-      driver: config.get<string>('DATABASE_DRIVER', 'mongodb'),
+      driver: config.get<string>('DATABASE_DRIVER', 'postgres'),
       url: config.get<string>('DATABASE_URL', ''),
     },
   }),

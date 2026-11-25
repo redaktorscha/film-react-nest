@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ConfigModule } from '@nestjs/config';
@@ -8,7 +9,13 @@ import { FilmsController } from './films/films.controller';
 import { FilmsService } from './films/films.service';
 import { OrderController } from './order/order.controller';
 import { OrderService } from './order/order.service';
-import { RepositoryModule } from './repository/repository.module';
+import { MongoRepositoryModule } from './repository/mongo/mongo-repository.module';
+import { PostgresRepositoryModule } from './repository/postgres/postgres-repository.module';
+
+const driver = process.env.DATABASE_DRIVER || 'postgres';
+if (driver !== 'mongodb' && driver !== 'postgres') {
+  throw new Error(`Unsupported DATABASE_DRIVER: ${driver}`);
+}
 
 @Module({
   imports: [
@@ -16,7 +23,7 @@ import { RepositoryModule } from './repository/repository.module';
       isGlobal: true,
       cache: true,
     }),
-    RepositoryModule,
+    driver === 'postgres' ? PostgresRepositoryModule : MongoRepositoryModule,
     ServeStaticModule.forRoot({
       rootPath: path.join(__dirname, '..', 'public', 'content', 'afisha'),
       serveRoot: '/content/afisha',
