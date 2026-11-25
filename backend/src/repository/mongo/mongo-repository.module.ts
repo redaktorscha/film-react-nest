@@ -3,9 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { Connection, createConnection, Model } from 'mongoose';
 import { FilmEntity, FilmSchema } from './schemas/film.schema';
 import { OrderEntity, OrderSchema } from './schemas/order.schema';
-import { FilmsRepository } from './films.repository';
-import { OrdersRepository } from './orders.repository';
+import { MongoFilmsRepository } from './mongo-films.repository';
+import { MongoOrdersRepository } from './mongo-orders.repository';
 import { FILM_MODEL, MONGO_CONNECTION, ORDER_MODEL } from './constants';
+import { FILMS_REPOSITORY } from '../contracts/films.repository';
+import { ORDERS_REPOSITORY } from '../contracts/orders.repository';
 
 export { FILM_MODEL, MONGO_CONNECTION, ORDER_MODEL } from './constants';
 
@@ -32,12 +34,14 @@ export { FILM_MODEL, MONGO_CONNECTION, ORDER_MODEL } from './constants';
       useFactory: (connection: Connection): Model<OrderEntity> =>
         connection.model<OrderEntity>('Order', OrderSchema),
     },
-    FilmsRepository,
-    OrdersRepository,
+    MongoFilmsRepository,
+    MongoOrdersRepository,
+    { provide: FILMS_REPOSITORY, useExisting: MongoFilmsRepository },
+    { provide: ORDERS_REPOSITORY, useExisting: MongoOrdersRepository },
   ],
-  exports: [FilmsRepository, OrdersRepository],
+  exports: [FILMS_REPOSITORY, ORDERS_REPOSITORY],
 })
-export class RepositoryModule implements OnApplicationShutdown {
+export class MongoRepositoryModule implements OnApplicationShutdown {
   constructor(
     @Inject(MONGO_CONNECTION) private readonly connection: Connection,
   ) {}

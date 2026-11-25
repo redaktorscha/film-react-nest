@@ -2,8 +2,8 @@ import {
   FilmDto,
   FilmWithScheduleDto,
   SessionDto,
-} from '../films/dto/films.dto';
-import { OrderDto, OrderedTicketDto } from '../order/dto/order.dto';
+} from '../../films/dto/films.dto';
+import { OrderDto, OrderedTicketDto } from '../../order/dto/order.dto';
 import { FilmEntity } from './schemas/film.schema';
 import { OrderEntity } from './schemas/order.schema';
 import { ScheduleEntity } from './schemas/schedule.schema';

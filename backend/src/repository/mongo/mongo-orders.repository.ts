@@ -1,12 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
-import { OrderDto, OrderedTicketDto } from '../order/dto/order.dto';
+import { OrderDto, OrderedTicketDto } from '../../order/dto/order.dto';
+import { OrdersRepository } from '../contracts/orders.repository';
 import { orderDtoToEntity } from './converters';
 import { ORDER_MODEL } from './constants';
 import { OrderEntity } from './schemas/order.schema';
 
 @Injectable()
-export class OrdersRepository {
+export class MongoOrdersRepository implements OrdersRepository {
   constructor(
     @Inject(ORDER_MODEL) private readonly orders: Model<OrderEntity>,
   ) {}
