@@ -1,23 +1,29 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { plainToInstance } from 'class-transformer';
 import { Model } from 'mongoose';
 import { FilmDto, FilmWithScheduleDto } from '../../films/dto/films.dto';
 import { FilmsRepository } from '../contracts/films.repository';
-import { filmToDto, filmWithScheduleToDto } from './converters';
-import { FILM_MODEL } from './constants';
-import { FilmEntity } from './schemas/film.schema';
+import { MongoFilm } from './schemas/film.schema';
 
 @Injectable()
 export class MongoFilmsRepository implements FilmsRepository {
-  constructor(@Inject(FILM_MODEL) private readonly films: Model<FilmEntity>) {}
+  constructor(
+    @InjectModel(MongoFilm.name) private readonly films: Model<MongoFilm>,
+  ) {}
 
   async findAll(): Promise<FilmDto[]> {
     const films = await this.films.find().lean().exec();
-    return films.map((film) => filmToDto(film));
+    return plainToInstance(FilmDto, films, { excludeExtraneousValues: true });
   }
 
   async findById(id: string): Promise<FilmWithScheduleDto | null> {
     const film = await this.films.findOne({ id }).lean().exec();
-    return film ? filmWithScheduleToDto(film) : null;
+    return film
+      ? plainToInstance(FilmWithScheduleDto, film, {
+          excludeExtraneousValues: true,
+        })
+      : null;
   }
 
   async reserveSeat(

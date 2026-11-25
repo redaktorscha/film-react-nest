@@ -1,31 +1,37 @@
-import { Schema } from 'mongoose';
-import { ScheduleEntity, ScheduleSchema } from './schedule.schema';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { MongoSchedule, ScheduleSchema } from './schedule.schema';
 
-export interface FilmEntity {
+@Schema({ collection: 'films' })
+export class MongoFilm {
+  @Prop({ required: true, unique: true })
   id: string;
+
+  @Prop({ required: true })
   rating: number;
+
+  @Prop({ required: true })
   director: string;
+
+  @Prop({ type: [String], default: [] })
   tags: string[];
+
+  @Prop({ required: true })
   title: string;
+
+  @Prop({ required: true })
   about: string;
+
+  @Prop({ required: true })
   description: string;
+
+  @Prop({ required: true })
   image: string;
+
+  @Prop({ required: true })
   cover: string;
-  schedule: ScheduleEntity[];
+
+  @Prop({ type: [ScheduleSchema], default: [] })
+  schedule: MongoSchedule[];
 }
 
-export const FilmSchema = new Schema<FilmEntity>(
-  {
-    id: { type: String, required: true, unique: true },
-    rating: { type: Number, required: true },
-    director: { type: String, required: true },
-    tags: { type: [String], default: [] },
-    title: { type: String, required: true },
-    about: { type: String, required: true },
-    description: { type: String, required: true },
-    image: { type: String, required: true },
-    cover: { type: String, required: true },
-    schedule: { type: [ScheduleSchema], default: [] },
-  },
-  { collection: 'films' },
-);
+export const FilmSchema = SchemaFactory.createForClass(MongoFilm);

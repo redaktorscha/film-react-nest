@@ -21,18 +21,6 @@ export class OrderService {
   ) {}
 
   async createOrder(order: OrderDto): Promise<ListDto<OrderedTicketDto>> {
-    if (
-      !order ||
-      typeof order.email !== 'string' ||
-      order.email.trim() === '' ||
-      typeof order.phone !== 'string' ||
-      order.phone.trim() === '' ||
-      !Array.isArray(order.tickets) ||
-      order.tickets.length === 0
-    ) {
-      throw new BadRequestException({ error: 'Некорректные данные заказа' });
-    }
-
     const reservations: { filmId: string; sessionId: string; key: string }[] =
       [];
     const pending = new Set<string>();

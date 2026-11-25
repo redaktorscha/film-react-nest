@@ -1,3 +1,0 @@
-export const MONGO_CONNECTION = 'MONGO_CONNECTION';
-export const FILM_MODEL = 'FILM_MODEL';
-export const ORDER_MODEL = 'ORDER_MODEL';

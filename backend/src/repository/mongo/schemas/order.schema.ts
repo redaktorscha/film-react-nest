@@ -1,39 +1,41 @@
-import { Schema } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-export interface OrderedTicketEntity {
+@Schema({ _id: false })
+export class MongoOrderedTicket {
+  @Prop({ required: true })
   id: string;
+
+  @Prop({ required: true })
   film: string;
+
+  @Prop({ required: true })
   session: string;
+
+  @Prop({ required: true })
   daytime: string;
+
+  @Prop({ required: true })
   row: number;
+
+  @Prop({ required: true })
   seat: number;
+
+  @Prop({ required: true })
   price: number;
 }
 
-export interface OrderEntity {
+const OrderedTicketSchema = SchemaFactory.createForClass(MongoOrderedTicket);
+
+@Schema({ collection: 'orders' })
+export class MongoOrder {
+  @Prop({ required: true })
   email: string;
+
+  @Prop({ required: true })
   phone: string;
-  tickets: OrderedTicketEntity[];
+
+  @Prop({ type: [OrderedTicketSchema], required: true })
+  tickets: MongoOrderedTicket[];
 }
 
-const TicketSchema = new Schema<OrderedTicketEntity>(
-  {
-    id: { type: String, required: true },
-    film: { type: String, required: true },
-    session: { type: String, required: true },
-    daytime: { type: String, required: true },
-    row: { type: Number, required: true },
-    seat: { type: Number, required: true },
-    price: { type: Number, required: true },
-  },
-  { _id: false },
-);
-
-export const OrderSchema = new Schema<OrderEntity>(
-  {
-    email: { type: String, required: true },
-    phone: { type: String, required: true },
-    tickets: { type: [TicketSchema], required: true },
-  },
-  { collection: 'orders' },
-);
+export const OrderSchema = SchemaFactory.createForClass(MongoOrder);

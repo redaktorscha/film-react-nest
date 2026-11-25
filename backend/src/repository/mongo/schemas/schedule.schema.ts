@@ -1,24 +1,27 @@
-import { Schema } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-export interface ScheduleEntity {
+@Schema({ _id: false })
+export class MongoSchedule {
+  @Prop({ required: true })
   id: string;
+
+  @Prop({ required: true })
   daytime: string;
+
+  @Prop({ required: true })
   hall: number;
+
+  @Prop({ required: true })
   rows: number;
+
+  @Prop({ required: true })
   seats: number;
+
+  @Prop({ required: true })
   price: number;
+
+  @Prop({ type: [String], default: [] })
   taken: string[];
 }
 
-export const ScheduleSchema = new Schema<ScheduleEntity>(
-  {
-    id: { type: String, required: true },
-    daytime: { type: String, required: true },
-    hall: { type: Number, required: true },
-    rows: { type: Number, required: true },
-    seats: { type: Number, required: true },
-    price: { type: Number, required: true },
-    taken: { type: [String], default: [] },
-  },
-  { _id: false },
-);
+export const ScheduleSchema = SchemaFactory.createForClass(MongoSchedule);

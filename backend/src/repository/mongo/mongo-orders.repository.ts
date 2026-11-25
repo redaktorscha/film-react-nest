@@ -1,18 +1,21 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { OrderDto, OrderedTicketDto } from '../../order/dto/order.dto';
 import { OrdersRepository } from '../contracts/orders.repository';
-import { orderDtoToEntity } from './converters';
-import { ORDER_MODEL } from './constants';
-import { OrderEntity } from './schemas/order.schema';
+import { MongoOrder } from './schemas/order.schema';
 
 @Injectable()
 export class MongoOrdersRepository implements OrdersRepository {
   constructor(
-    @Inject(ORDER_MODEL) private readonly orders: Model<OrderEntity>,
+    @InjectModel(MongoOrder.name) private readonly orders: Model<MongoOrder>,
   ) {}
 
   async create(order: OrderDto, tickets: OrderedTicketDto[]): Promise<void> {
-    await this.orders.create(orderDtoToEntity(order, tickets));
+    await this.orders.create({
+      email: order.email,
+      phone: order.phone,
+      tickets,
+    });
   }
 }
