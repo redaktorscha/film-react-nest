@@ -1,30 +1,26 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Inject, Injectable, BadRequestException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { FilmsRepository } from '../repository/films.repository';
-import { OrdersRepository } from '../repository/orders.repository';
+import {
+  FILMS_REPOSITORY,
+  FilmsRepository,
+} from '../repository/contracts/films.repository';
+import {
+  ORDERS_REPOSITORY,
+  OrdersRepository,
+} from '../repository/contracts/orders.repository';
 import { ListDto } from '../films/dto/films.dto';
 import { OrderDto, OrderedTicketDto } from './dto/order.dto';
 
 @Injectable()
 export class OrderService {
   constructor(
+    @Inject(FILMS_REPOSITORY)
     private readonly filmsRepository: FilmsRepository,
+    @Inject(ORDERS_REPOSITORY)
     private readonly ordersRepository: OrdersRepository,
   ) {}
 
   async createOrder(order: OrderDto): Promise<ListDto<OrderedTicketDto>> {
-    if (
-      !order ||
-      typeof order.email !== 'string' ||
-      order.email.trim() === '' ||
-      typeof order.phone !== 'string' ||
-      order.phone.trim() === '' ||
-      !Array.isArray(order.tickets) ||
-      order.tickets.length === 0
-    ) {
-      throw new BadRequestException({ error: 'Некорректные данные заказа' });
-    }
-
     const reservations: { filmId: string; sessionId: string; key: string }[] =
       [];
     const pending = new Set<string>();
